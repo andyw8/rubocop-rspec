@@ -38,8 +38,8 @@ module RuboCop
       #     it { should be_valid }
       #   end
       class NamedSubject < Cop
-        MSG = 'Name your test subject if '\
-              'you need to reference it explicitly.'.freeze
+        MSG = 'Name your test subject if you need '\
+              'to reference it explicitly.'.freeze
 
         def_node_matcher :rspec_block?, <<-PATTERN
           (block
@@ -60,7 +60,7 @@ module RuboCop
         private
 
         def subject_usage(node, &block)
-          return unless node.instance_of?(Node)
+          return unless node.is_a?(Parser::AST::Node)
 
           unnamed_subject(node, &block)
 

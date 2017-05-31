@@ -17,9 +17,9 @@ module RuboCop
       #   expect(name).to eq("John")
       #
       class ExpectActual < Cop
-        MSG = 'Provide the actual you are testing to `expect(...)`'.freeze
+        MSG = 'Provide the actual you are testing to `expect(...)`.'.freeze
 
-        SIMPLE_LITERALS = %i(
+        SIMPLE_LITERALS = %i[
           true
           false
           nil
@@ -30,18 +30,18 @@ module RuboCop
           complex
           rational
           regopt
-        ).freeze
+        ].freeze
 
-        COMPLEX_LITERALS = %i(
+        COMPLEX_LITERALS = %i[
           array
           hash
           pair
           irange
           erange
           regexp
-        ).freeze
+        ].freeze
 
-        def_node_matcher :expect, '(send _ :expect $_)'
+        def_node_matcher :expect_literal, '(send _ :expect $#literal?)'
 
         def on_send(node)
           expect_literal(node) do |argument|
@@ -53,14 +53,8 @@ module RuboCop
 
         # This is not implement using a NodePattern because it seems
         # to not be able to match against an explicit (nil) sexp
-        def expect_literal(node)
-          return unless (argument = expect(node))
-
-          yield(argument) if literal?(argument)
-        end
-
         def literal?(node)
-          simple_literal?(node) || complex_literal?(node)
+          node && (simple_literal?(node) || complex_literal?(node))
         end
 
         def simple_literal?(node)

@@ -1,4 +1,4 @@
-describe 'CHANGELOG.md' do
+RSpec.describe 'CHANGELOG.md' do
   subject(:changelog) { SpecHelper::ROOT.join('CHANGELOG.md').read }
 
   it 'has link definitions for all implicit links' do
@@ -10,18 +10,15 @@ describe 'CHANGELOG.md' do
 
   describe 'entry' do
     subject(:entries) { lines.grep(/^\*/).map(&:chomp) }
+
     let(:lines) { changelog.each_line }
 
     it 'has a whitespace between the * and the body' do
-      entries.each do |entry|
-        expect(entry).to match(/^\* \S/)
-      end
+      expect(entries).to all(match(/^\* \S/))
     end
 
     it 'has a link to the contributors at the end' do
-      entries.each do |entry|
-        expect(entry).to match(/\(\[@\S+\]\[\](?:, \[@\S+\]\[\])*\)$/)
-      end
+      expect(entries).to all(match(/\(\[@\S+\]\[\](?:, \[@\S+\]\[\])*\)$/))
     end
 
     describe 'link to related issue on github' do
@@ -50,9 +47,7 @@ describe 'CHANGELOG.md' do
           entry.match(/^\*\s*\[/)
         end
 
-        entries_including_issue_link.each do |entry|
-          expect(entry).to include('): ')
-        end
+        expect(entries_including_issue_link).to all(include('): '))
       end
     end
 
@@ -72,9 +67,7 @@ describe 'CHANGELOG.md' do
       end
 
       it 'ends with a punctuation' do
-        bodies.each do |body|
-          expect(body).to match(/[\.\!]$/)
-        end
+        expect(bodies).to all(match(/[\.\!]$/))
       end
     end
   end

@@ -34,24 +34,18 @@ module RuboCop
       # coerce objects for comparison.
       #
       class BeEql < Cop
-        include RuboCop::Cop::ConfigurableEnforcedStyle
-
-        MSG = 'Prefer `be` over `eql`'.freeze
+        MSG = 'Prefer `be` over `eql`.'.freeze
 
         def_node_matcher :eql_type_with_identity, <<-PATTERN
           (send _ :to $(send nil :eql {true false int float sym nil_type?}))
         PATTERN
 
         def on_send(node)
-          eql_type_with_identity(node) do |eql|
-            add_offense(eql, :selector, MSG)
-          end
+          eql_type_with_identity(node) { |eql| add_offense(eql, :selector) }
         end
 
         def autocorrect(node)
-          lambda do |corrector|
-            corrector.replace(node.loc.selector, 'be')
-          end
+          ->(corrector) { corrector.replace(node.loc.selector, 'be') }
         end
       end
     end

@@ -25,7 +25,17 @@ RSpec.configure do |config|
     mocks.syntax = :expect # Disable `should_receive` and `stub`
   end
 
-  config.include(ExpectViolation)
+  # Forbid RSpec from monkey patching any of our objects
+  config.disable_monkey_patching!
+
+  # We should address configuration warnings when we upgrade
+  config.raise_errors_for_deprecations!
+
+  # RSpec gives helpful warnings when you are doing something wrong.
+  # We should take their advice!
+  config.raise_on_warning = true
+
+  config.include(ExpectOffense)
 end
 
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))

@@ -3,7 +3,9 @@
 module RuboCop
   module Cop
     module RSpec
-      # Checks that example descriptions do not start with "should".
+      # Checks for common mistakes in example descriptions.
+      #
+      # This cop will correct docstrings that begin with 'should' and 'it'.
       #
       # @see http://betterspecs.org/#should
       #
@@ -18,41 +20,69 @@ module RuboCop
       #   # good
       #   it 'finds nothing' do
       #   end
+      #
+      # @example
+      #   # bad
+      #   it 'it does things' do
+      #   end
+      #
+      #   # good
+      #   it 'does things' do
+      #   end
       class ExampleWording < Cop
-        MSG = 'Do not use should when describing your tests.'.freeze
+        MSG_SHOULD = 'Do not use should when describing your tests.'.freeze
+        MSG_IT     = "Do not repeat 'it' when describing your tests.".freeze
 
-        def on_block(node) # rubocop:disable Metrics/AbcSize,Metrics/MethodLength,Metrics/LineLength
-          method, = *node
-          _, method_name, *args = *method
+        SHOULD_PREFIX = /\Ashould(?:n't)?\b/i
+        IT_PREFIX     = /\Ait /i
 
-          return unless method_name.equal?(:it)
+        def_node_matcher(
+          :it_description,
+          '(block (send _ :it $(str $_) ...) ...)'
+        )
 
-          arguments = args.first.to_a
-          message = arguments.first.to_s
-          return unless message.downcase.start_with?('should')
-
-          arg1 = args.first.loc.expression
-          message = Parser::Source::Range.new(arg1.source_buffer,
-                                              arg1.begin_pos + 1,
-                                              arg1.end_pos - 1)
-
-          add_offense(message, message)
-        end
-
-        def autocorrect(range)
-          lambda do |corrector|
-            corrector.replace(
-              range,
-              RuboCop::RSpec::Wording.new(
-                range.source,
-                ignore: ignored_words,
-                replace: custom_transform
-              ).rewrite
-            )
+        def on_block(node)
+          it_description(node) do |description_node, message|
+            if message =~ SHOULD_PREFIX
+              add_wording_offense(description_node, MSG_SHOULD)
+            elsif message =~ IT_PREFIX
+              add_wording_offense(description_node, MSG_IT)
+            end
           end
         end
 
+        def autocorrect(range)
+          ->(corrector) { corrector.replace(range, replacement_text(range)) }
+        end
+
         private
+
+        def add_wording_offense(node, message)
+          expr = node.loc.expression
+
+          docstring =
+            Parser::Source::Range.new(
+              expr.source_buffer,
+              expr.begin_pos + 1,
+              expr.end_pos - 1
+            )
+
+          add_offense(docstring, docstring, message)
+        end
+
+        def replacement_text(range)
+          text = range.source
+
+          if text =~ SHOULD_PREFIX
+            RuboCop::RSpec::Wording.new(
+              text,
+              ignore:  ignored_words,
+              replace: custom_transform
+            ).rewrite
+          else
+            text.sub(IT_PREFIX, '')
+          end
+        end
 
         def custom_transform
           cop_config.fetch('CustomTransform', {})

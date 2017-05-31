@@ -1,24 +1,28 @@
-describe 'config/default.yml' do
+RSpec.describe 'config/default.yml' do
   subject(:default_config) do
     RuboCop::ConfigLoader.load_file('config/default.yml')
   end
 
   let(:cop_names) do
-    glob = SpecHelper::ROOT.join('lib', 'rubocop', 'cop', 'rspec', '*.rb')
-
+    namespaces = {
+      'rspec' => 'RSpec',
+      'factory_girl' => 'FactoryGirl'
+    }
+    glob = SpecHelper::ROOT.join('lib', 'rubocop', 'cop',
+                                 'rspec', '{,factory_girl/}*.rb')
     cop_names =
       Pathname.glob(glob).map do |file|
         file_name = file.basename('.rb').to_s
         cop_name  = file_name.gsub(/(^|_)(.)/) { Regexp.last_match(2).upcase }
-
-        "RSpec/#{cop_name}"
+        namespace = namespaces[file.dirname.basename.to_s]
+        "#{namespace}/#{cop_name}"
       end
 
-    cop_names - %w(RSpec/Cop)
+    cop_names - %w[RSpec/Cop]
   end
 
   let(:config_keys) do
-    cop_names + %w(AllCops)
+    cop_names + %w[AllCops]
   end
 
   def cop_configuration(config_key)

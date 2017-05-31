@@ -7,8 +7,7 @@ module RuboCop
     class WorkaroundCop
       # Overwrite the cop inherited method to be a noop. Our RSpec::Cop
       # class will invoke the inherited hook instead
-      def self.inherited(*)
-      end
+      def self.inherited(*); end
 
       # Special case `Module#<` so that the rspec support rubocop exports
       # is compatible with our subclass
@@ -34,10 +33,11 @@ module RuboCop
       #       - '_test.rb$'
       #       - '(?:^|/)test/'
       class Cop < WorkaroundCop
+        include RuboCop::RSpec::Language
+        include RuboCop::RSpec::Language::NodePattern
+
         DEFAULT_CONFIGURATION =
           RuboCop::RSpec::CONFIG.fetch('AllCops').fetch('RSpec')
-
-        include RuboCop::RSpec::Language, RuboCop::RSpec::Language::NodePattern
 
         # Invoke the original inherited hook so our cops are recognized
         def self.inherited(subclass)
@@ -45,10 +45,14 @@ module RuboCop
         end
 
         def relevant_file?(file)
-          rspec_pattern =~ file && super
+          relevant_rubocop_rspec_file?(file) && super
         end
 
         private
+
+        def relevant_rubocop_rspec_file?(file)
+          rspec_pattern =~ file
+        end
 
         def rspec_pattern
           Regexp.union(rspec_pattern_config.map(&Regexp.public_method(:new)))

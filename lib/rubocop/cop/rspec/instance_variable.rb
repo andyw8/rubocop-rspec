@@ -47,13 +47,11 @@ module RuboCop
       #   end
       #
       class InstanceVariable < Cop
-        MESSAGE = 'Use `let` instead of an instance variable'.freeze
+        MSG = 'Use `let` instead of an instance variable.'.freeze
 
         EXAMPLE_GROUP_METHODS = ExampleGroups::ALL + SharedGroups::ALL
 
-        def_node_matcher :spec_group?, <<-PATTERN
-          (block (send _ {#{EXAMPLE_GROUP_METHODS.to_node_pattern}} ...) ...)
-        PATTERN
+        def_node_matcher :spec_group?, EXAMPLE_GROUP_METHODS.block_pattern
 
         def_node_search :ivar_usage, '$(ivar $_)'
 
@@ -65,7 +63,7 @@ module RuboCop
           ivar_usage(node) do |ivar, name|
             return if assignment_only? && !ivar_assigned?(node, name)
 
-            add_offense(ivar, :expression, MESSAGE)
+            add_offense(ivar, :expression)
           end
         end
 

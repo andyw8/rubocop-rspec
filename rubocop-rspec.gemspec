@@ -34,13 +34,10 @@ Gem::Specification.new do |spec|
   spec.test_files = spec.files.grep(%r{^spec/})
   spec.extra_rdoc_files = ['MIT-LICENSE.md', 'README.md']
 
-  spec.add_runtime_dependency 'rubocop', '>= 0.42.0'
+  spec.add_runtime_dependency 'rubocop', '>= 0.49.0'
 
   spec.add_development_dependency 'rake'
   spec.add_development_dependency 'rspec', '>= 3.4'
   spec.add_development_dependency 'simplecov'
-  spec.add_development_dependency 'anima'
-  spec.add_development_dependency 'concord'
-  spec.add_development_dependency 'adamantium'
   spec.add_development_dependency 'yard'
 end

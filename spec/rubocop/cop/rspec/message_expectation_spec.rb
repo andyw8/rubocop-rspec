@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-describe RuboCop::Cop::RSpec::MessageExpectation, :config do
+RSpec.describe RuboCop::Cop::RSpec::MessageExpectation, :config do
   subject(:cop) { described_class.new(config) }
 
   context 'when EnforcedStyle is allow' do
@@ -9,27 +9,18 @@ describe RuboCop::Cop::RSpec::MessageExpectation, :config do
     end
 
     it 'flags expect(...).to receive' do
-      expect_violation(<<-RUBY)
+      expect_offense(<<-RUBY)
         expect(foo).to receive(:bar)
         ^^^^^^ Prefer `allow` for setting message expectations.
       RUBY
     end
 
     it 'approves of allow(...).to receive' do
-      expect_no_violations('allow(foo).to receive(:bar)')
+      expect_no_offenses('allow(foo).to receive(:bar)')
     end
 
-    it 'generates a todo based on the usage of the correct style' do
-      inspect_source(cop, 'allow(foo).to receive(:bar)', 'foo_spec.rb')
-
-      expect(cop.config_to_allow_offenses).to eq('EnforcedStyle' => 'allow')
-    end
-
-    it 'generates a todo based on the usage of the alternate style' do
-      inspect_source(cop, 'expect(foo).to receive(:bar)', 'foo_spec.rb')
-
-      expect(cop.config_to_allow_offenses).to eq('EnforcedStyle' => 'expect')
-    end
+    include_examples 'detects style', 'allow(foo).to receive(:bar)',  'allow'
+    include_examples 'detects style', 'expect(foo).to receive(:bar)', 'expect'
   end
 
   context 'when EnforcedStyle is expect' do
@@ -38,26 +29,17 @@ describe RuboCop::Cop::RSpec::MessageExpectation, :config do
     end
 
     it 'flags allow(...).to receive' do
-      expect_violation(<<-RUBY)
+      expect_offense(<<-RUBY)
         allow(foo).to receive(:bar)
         ^^^^^ Prefer `expect` for setting message expectations.
       RUBY
     end
 
     it 'approves of expect(...).to receive' do
-      expect_no_violations('expect(foo).to receive(:bar)')
+      expect_no_offenses('expect(foo).to receive(:bar)')
     end
 
-    it 'generates a todo based on the usage of the correct style' do
-      inspect_source(cop, 'expect(foo).to receive(:bar)', 'foo_spec.rb')
-
-      expect(cop.config_to_allow_offenses).to eq('EnforcedStyle' => 'expect')
-    end
-
-    it 'generates a todo based on the usage of the alternate style' do
-      inspect_source(cop, 'allow(foo).to receive(:bar)', 'foo_spec.rb')
-
-      expect(cop.config_to_allow_offenses).to eq('EnforcedStyle' => 'allow')
-    end
+    include_examples 'detects style', 'expect(foo).to receive(:bar)', 'expect'
+    include_examples 'detects style', 'allow(foo).to receive(:bar)',  'allow'
   end
 end

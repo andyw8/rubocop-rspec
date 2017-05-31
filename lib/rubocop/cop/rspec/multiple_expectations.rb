@@ -48,25 +48,53 @@ module RuboCop
       class MultipleExpectations < Cop
         include ConfigurableMax
 
-        MSG = 'Too many expectations.'.freeze
+        MSG = 'Example has too many expectations [%<total>d/%<max>d].'.freeze
 
-        def_node_matcher :example?, <<-PATTERN
-          (block (send _ {#{Examples::ALL.to_node_pattern}} ...) ...)
+        def_node_search :with_aggregated_failures?, '(sym :aggregate_failures)'
+        def_node_search :disabled_aggregated_failures?, <<-PATTERN
+          (pair (sym :aggregate_failures) (false))
         PATTERN
 
-        def_node_search :expect, '(send _ :expect ...)'
+        def_node_matcher :expect?, '(send _ :expect ...)'
+        def_node_matcher :aggregate_failures?, <<-PATTERN
+          (block (send _ :aggregate_failures ...) ...)
+        PATTERN
 
         def on_block(node)
-          return unless example?(node) && (expectations = expect(node))
+          return unless example?(node)
 
-          return if expectations.count <= max_expectations
+          return if example_with_aggregated_failures?(node)
 
-          self.max = expectations.count
+          expectations_count = to_enum(:find_expectation, node).count
 
-          flag_example(node, expectation_count: expectations.count)
+          return if expectations_count <= max_expectations
+
+          self.max = expectations_count
+
+          flag_example(node, expectation_count: expectations_count)
         end
 
         private
+
+        def example_with_aggregated_failures?(node)
+          example = node.children.first
+
+          with_aggregated_failures?(example) &&
+            !disabled_aggregated_failures?(example)
+        end
+
+        def find_expectation(node, &block)
+          return unless node.is_a?(Parser::AST::Node)
+
+          yield if expect?(node) || aggregate_failures?(node)
+
+          # do not search inside of aggregate_failures block
+          return if aggregate_failures?(node)
+
+          node.children.each do |child|
+            find_expectation(child, &block)
+          end
+        end
 
         def flag_example(node, expectation_count:)
           method, = *node
@@ -74,12 +102,12 @@ module RuboCop
           add_offense(
             method,
             :expression,
-            MSG % { total: expectation_count, max: max_expectations }
+            format(MSG, total: expectation_count, max: max_expectations)
           )
         end
 
         def max_expectations
-          Integer(cop_config.fetch(parameter_name, 1))
+          Integer(cop_config.fetch('Max', 1))
         end
       end
     end

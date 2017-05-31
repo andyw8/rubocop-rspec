@@ -28,29 +28,26 @@ module RuboCop
       class ExampleLength < Cop
         include CodeLength
 
-        EXAMPLE_BLOCKS = RuboCop::RSpec::Language::Examples::ALL
+        MSG = 'Example has too many lines [%d/%d].'.freeze
 
         def on_block(node)
-          method, _args, _body = *node
-          _receiver, method_name, _object = *method
-          return unless EXAMPLE_BLOCKS.include?(method_name)
+          return unless example?(node)
 
           length = code_length(node)
 
           return unless length > max_length
+
           add_offense(node, :expression, message(length))
         end
 
         private
 
         def code_length(node)
-          lines = node.source.lines[1..-2]
-
-          lines.count { |line| !irrelevant_line(line) }
+          node.source.lines[1..-2].count { |line| !irrelevant_line(line) }
         end
 
         def message(length)
-          format('Example has too many lines. [%d/%d]', length, max_length)
+          format(MSG, length, max_length)
         end
       end
     end

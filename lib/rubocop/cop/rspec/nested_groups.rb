@@ -5,7 +5,7 @@ module RuboCop
     module RSpec
       # Checks for nested example groups.
       #
-      # This cop is configurable using the `MaxNesting` option
+      # This cop is configurable using the `Max` option
       #
       # @example
       #   # bad
@@ -56,7 +56,7 @@ module RuboCop
       #
       #   # .rubocop.yml
       #   RSpec/NestedGroups:
-      #     MaxNesting: 2
+      #     Max: 2
       #
       #   context 'when using some feature' do
       #     let(:some)    { :various }
@@ -87,18 +87,19 @@ module RuboCop
       class NestedGroups < Cop
         include RuboCop::RSpec::TopLevelDescribe
 
-        MSG = 'Maximum example group nesting exceeded'.freeze
+        MSG = 'Maximum example group nesting exceeded [%d/%d].'.freeze
 
-        def_node_search :find_contexts, <<-PATTERN
-          (block (send nil {#{ExampleGroups::ALL.to_node_pattern}} ...) (args) ...)
-        PATTERN
+        DEPRECATED_MAX_KEY = 'MaxNesting'.freeze
 
-        def on_block(node)
-          describe, = described_constant(node)
-          return unless describe
+        DEPRECATION_WARNING =
+          "Configuration key `#{DEPRECATED_MAX_KEY}` for #{cop_name} is " \
+          'deprecated in favor of `Max`. Please use that instead.'.freeze
 
-          find_nested_contexts(node) do |context|
-            add_offense(context.children.first, :expression)
+        def_node_search :find_contexts, ExampleGroups::ALL.block_pattern
+
+        def on_top_level_describe(node, _)
+          find_nested_contexts(node.parent) do |context, nesting|
+            add_offense(context.children.first, :expression, message(nesting))
           end
         end
 
@@ -106,7 +107,7 @@ module RuboCop
 
         def find_nested_contexts(node, nesting: 1, &block)
           find_contexts(node) do |nested_context|
-            yield(nested_context) if nesting > max_nesting
+            yield(nested_context, nesting) if nesting > max_nesting
 
             nested_context.each_child_node do |child|
               find_nested_contexts(child, nesting: nesting + 1, &block)
@@ -114,8 +115,21 @@ module RuboCop
           end
         end
 
+        def message(nesting)
+          format(MSG, nesting, max_nesting)
+        end
+
         def max_nesting
-          Integer(cop_config.fetch('MaxNesting', 2))
+          @max_nesting ||= Integer(max_nesting_config)
+        end
+
+        def max_nesting_config
+          if cop_config.key?(DEPRECATED_MAX_KEY)
+            warn DEPRECATION_WARNING
+            cop_config.fetch(DEPRECATED_MAX_KEY)
+          else
+            cop_config.fetch('Max', 3)
+          end
         end
       end
     end

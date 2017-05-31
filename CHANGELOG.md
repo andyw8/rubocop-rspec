@@ -1,8 +1,75 @@
 # Change log
 
-## Master (unreleased)
+## Master (Unreleased)
+
+* Add `RSpec/FactoryGirl` namespace including the first cop for factories: `FactoryGirl/DynamicAttributeDefinedStatically`. ([@jonatas][])
+* Add disabled by default `RSpec/AlignLeftLetBrace`. ([@backus][])
+* Add disabled by default `RSpec/AlignRightLetBrace`. ([@backus][])
+* Add `RSpec/LetBeforeExamples` cop. ([@Darhazer][])
+* Add `RSpec/MultipleSubjects` cop. ([@backus][])
+
+## 1.15.1 (2017-04-30)
+
+* Fix the handling of various edge cases in the `RSpec/ExampleWording` cop, including one that would cause autocorrect to crash. ([@dgollahon][])
+* Fix `RSpec/IteratedExpectation` crashing when there is an assignment in the iteration. ([@Darhazer][])
+* Fix false positive in `RSpec/SingleArgumentMessageChain` cop when the single argument is a hash. ([@Darhazer][])
+
+## 1.15.0 (2017-03-24)
+
+* Add `RSpec/DescribeSymbol` cop. ([@tsigo][])
+* Fix error when `RSpec/OverwritingSetup` and `RSpec/ScatteredLet` analyzed empty example groups. ([@backus][])
+
+## 1.14.0 (2017-03-24)
+
+* Add `RSpec/OverwritingSetup` cop. ([@Darhazer][])
+* Add autocorrect support for `RSpec/LeadingSubject` cop. ([@Darhazer][])
+* Add `RSpec/ScatteredLet` cop. ([@Darhazer][])
+* Add `RSpec/IteratedExpectation` cop. ([@Darhazer][])
+* Add `RSpec/EmptyLineAfterSubject` cop. ([@Darhazer][])
+* Add `RSpec/EmptyLineAfterFinalLet` cop. ([@Darhazer][])
+
+## 1.13.0 (2017-03-07)
+
+* Add repeated 'it' detection to `RSpec/ExampleWording` cop. ([@dgollahon][])
+* Add [observed_nesting/max_nesting] info to `RSpec/NestedGroups` messages. ([@dgollahon][])
+* Add `RSpec/ItBehavesLike` cop. ([@dgollahon][])
+* Add `RSpec/SharedContext` cop. ([@Darhazer][])
+* `Rspec/MultipleExpectations`: Count aggregate_failures block as single expectation. ([@Darhazer][])
+* Fix `ExpectActual` cop flagging `rspec-rails` routing specs. ([@backus][])
+* Fix `FilePath` cop not registering offenses for files like `spec/blog/user.rb` when it should be `spec/blog/user_spec.rb`. ([@backus][])
+
+## 1.12.0 (2017-02-21)
+
+* Add `RSpec/InstanceSpy` cop. ([@Darhazer][])
+* Add `RSpec/BeforeAfterAll` for avoiding leaky global test setup. ([@cfabianski][])
+
+## 1.11.0 (2017-02-16)
+
+* Add `AroundBlock` cop. ([@Darhazer][])
+* Add `EnforcedStyle` configuration for `RSpec/DescribedClass` cop. ([@Darhazer][])
+* Fix false positive for `RSpec/RepeatedExample` cop. ([@redross][])
+
+## 1.10.0 (2017-01-15)
+
+* Fix false negative for `RSpec/MessageSpies` cop. ([@onk][])
+* Fix internal dependencies on RuboCop to be compatible with 0.47 release. ([@backus][])
+* Add autocorrect support for `SingleArgumentMessageChain` cop. ([@bquorning][])
+* Rename `NestedGroups`' configuration key from `MaxNesting` to `Max` in order to be consistent with other cop configuration. ([@backus][])
+* Add `RepeatedExample` cop for detecting repeated examples within example groups. ([@backus][])
+* Add `ScatteredSetup` cop for enforcing that only one `before`, `around`, and `after` hook are used per example group scope. ([@backus][])
+* Add `ExpectOutput` cop for recommending `expect { ... }.to output(...).to_stdout`. ([@backus][])
+
+## 1.9.1 (2017-01-02)
+
+* Fix unintentional regression change in `NestedGroups` reported in #270. ([@backus][])
+* Change `MaxNesting` for `NestedGroups` from 2 to 3. ([@backus][])
+
+## 1.9.0 (2016-12-29)
 
 * Add `MessageSpies` cop for enforcing consistent style of either `expect(...).to have_received` or `expect(...).to receive`, intended as a replacement for the `MessageExpectation` cop. ([@bquorning][])
+* Fix `DescribeClass` to not flag `describe` at the top of a block of shared examples. ([@clupprich][])
+* Add `SingleArgumentMessageChain` cop for recommending use of `receive` instead of `receive_message_chain` where possible. ([@bquorning][])
+* Add `RepeatedDescription` cop for detecting repeated example descriptions within example groups. ([@backus][])
 
 ## 1.8.0 (2016-10-27)
 
@@ -150,3 +217,11 @@
 [@jaredmoody]: https://github.com/jaredmoody
 [@baberthal]: https://github.com/baberthal
 [@jeffreyc]: https://github.com/jeffreyc
+[@clupprich]: https://github.com/clupprich
+[@onk]: https://github.com/onk
+[@Darhazer]: https://github.com/Darhazer
+[@redross]: https://github.com/redross
+[@cfabianski]: https://github.com/cfabianski
+[@dgollahon]: https://github.com/dgollahon
+[@tsigo]: https://github.com/tsigo
+[@jonatas]: https://github.com/jonatas

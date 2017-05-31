@@ -27,16 +27,17 @@ module RuboCop
       class MessageSpies < Cop
         include ConfigurableEnforcedStyle
 
-        MSG_RECEIVE = 'Prefer `receive` for setting message ' \
-          'expectations.'.freeze
-        MSG_HAVE_RECEIVED = 'Prefer `have_received` for setting message ' \
-          'expectations. Setup `%s` as a spy using `allow` or `instance_spy`.'
-          .freeze
+        MSG_RECEIVE = 'Prefer `receive` for setting message '\
+                      'expectations.'.freeze
 
-        SUPPORTED_STYLES = %w(have_received receive).freeze
+        MSG_HAVE_RECEIVED = 'Prefer `have_received` for setting message '\
+                            'expectations. Setup `%s` as a spy using `allow`'\
+                            ' or `instance_spy`.'.freeze
+
+        SUPPORTED_STYLES = %w[have_received receive].freeze
 
         def_node_matcher :message_expectation, %(
-          (send (send nil :expect (send nil $_)) :to ...)
+          (send (send nil :expect $_) {:to :to_not :not_to} ...)
         )
 
         def_node_search :receive_message, %(
@@ -70,7 +71,7 @@ module RuboCop
           when :receive
             MSG_RECEIVE
           when :have_received
-            MSG_HAVE_RECEIVED % receiver
+            MSG_HAVE_RECEIVED % receiver.source
           end
         end
       end
